@@ -1,5 +1,6 @@
 const asyncHandler = require("express-async-handler");
 const Order = require("../models/orderModel");
+const Coupon = require("../models/couponModel");
 
 // @desc    Create new order
 // @route   POST /api/orders
@@ -12,28 +13,139 @@ const addOrderItems = asyncHandler(async (req, res) => {
     itemsPrice,
     shippingPrice,
     totalPrice,
-    paymentResult, // <--- Added: For InstaPay Reference Number
+    paymentResult,
+    couponCode,
   } = req.body;
 
   if (orderItems && orderItems.length === 0) {
     res.status(400);
     throw new Error("No order items");
   } else {
-    const order = new Order({
-      orderItems,
-      // If user is logged in, attach their ID (req.user comes from auth middleware)
-      user: req.user ? req.user._id : undefined,
-      shippingAddress,
-      paymentMethod,
-      itemsPrice,
-      shippingPrice,
-      totalPrice,
-      paymentResult, // <--- Added
-    });
+    let finalTotalPrice = totalPrice;
+    let validCoupon = null;
 
-    const createdOrder = await order.save();
+    // --- COUPON VALIDATION & OPTIMISTIC USAGE INCREMENT ---
+    if (couponCode) {
+      const coupon = await Coupon.findOne({ code: couponCode.toUpperCase() });
 
-    res.status(201).json(createdOrder);
+      if (coupon) {
+        // 1. Basic Checks
+        const isValid =
+          coupon.isActive &&
+          new Date() <= coupon.expirationDate &&
+          (coupon.usageLimit === null || coupon.usedCount < coupon.usageLimit);
+
+        // 2. User Limit Check
+        let isUserValid = true;
+        if (req.user) {
+          const userUsage = coupon.usedBy.find(
+            (entry) => entry.user.toString() === req.user._id.toString()
+          );
+          if (userUsage && userUsage.count >= coupon.userUsageLimit) {
+            isUserValid = false;
+          }
+        }
+
+        if (isValid && isUserValid) {
+          // Calculate Discount
+          let discountAmount = 0;
+          if (coupon.discountType === "PERCENTAGE") {
+            discountAmount = itemsPrice * (coupon.discount / 100);
+          } else {
+            discountAmount = coupon.discount;
+          }
+          discountAmount = Math.min(discountAmount, itemsPrice);
+
+          // Update Total
+          finalTotalPrice = itemsPrice + shippingPrice - discountAmount;
+          validCoupon = coupon;
+
+          // Increment Usage
+          coupon.usedCount += 1;
+          if (req.user) {
+            const userIndex = coupon.usedBy.findIndex(
+              (entry) => entry.user.toString() === req.user._id.toString()
+            );
+            if (userIndex !== -1) {
+              coupon.usedBy[userIndex].count += 1;
+            } else {
+              coupon.usedBy.push({ user: req.user._id, count: 1 });
+            }
+          }
+          await coupon.save();
+        } else {
+           res.status(400);
+           throw new Error("Coupon is invalid, expired, or usage limit reached");
+        }
+      } else {
+        res.status(400);
+        throw new Error("Invalid coupon code");
+      }
+    }
+
+    // --- CREATE ORDER WITH ROLLBACK ---
+    try {
+      const order = new Order({
+        orderItems,
+        user: req.user ? req.user._id : undefined,
+        shippingAddress,
+        paymentMethod,
+        itemsPrice,
+        shippingPrice,
+        totalPrice: finalTotalPrice,
+        paymentResult,
+        isPaid: paymentMethod === "Instapay" ? false : undefined,
+        coupon: validCoupon
+          ? {
+              code: validCoupon.code,
+              discount: validCoupon.discount,
+              discountType: validCoupon.discountType,
+            }
+          : undefined,
+      });
+
+      const createdOrder = await order.save();
+
+      // --- SEND CONFIRMATION EMAIL (Async - don't block response) ---
+      // We wrap in try-catch so email failure doesn't crash the request
+      try {
+        const recipientEmail = shippingAddress.email || (req.user && req.user.email);
+
+        if (recipientEmail) {
+           const sendEmail = require("../utils/sendEmail");
+           const { generateOrderEmail } = require("../utils/emailTemplates");
+           
+           const emailHtml = generateOrderEmail(createdOrder, process.env.NEXT_PUBLIC_FRONTEND_URL || 'http://localhost:3000');
+           
+           await sendEmail({
+             email: recipientEmail,
+             subject: `Order Confirmation #${createdOrder.order_id} - VOID`,
+             message: emailHtml,
+           });
+        }
+      } catch (emailError) {
+        console.error("Email send failed:", emailError);
+        // We do NOT rollback order for email failure.
+      }
+
+      res.status(201).json(createdOrder);
+
+    } catch (error) {
+      // ROLLBACK COUPON USAGE
+      if (validCoupon) {
+        validCoupon.usedCount = Math.max(0, validCoupon.usedCount - 1);
+        if (req.user) {
+           const userIndex = validCoupon.usedBy.findIndex(
+              (entry) => entry.user.toString() === req.user._id.toString()
+           );
+           if (userIndex !== -1) {
+              validCoupon.usedBy[userIndex].count = Math.max(0, validCoupon.usedBy[userIndex].count - 1);
+           }
+        }
+        await validCoupon.save();
+      }
+      throw error;
+    }
   }
 });
 

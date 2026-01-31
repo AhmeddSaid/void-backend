@@ -30,6 +30,7 @@ const orderSchema = mongoose.Schema(
       city: { type: String, required: true },
       governorate: { type: String, required: true }, // e.g., Cairo, Giza
       phoneNumber: { type: String, required: true }, // Critical for COD
+      email: { type: String, required: false }, // Optional (for guests) but recommended for notifications
     },
     paymentMethod: {
       type: String,
@@ -41,6 +42,11 @@ const orderSchema = mongoose.Schema(
       id: { type: String },
       status: { type: String },
       update_time: { type: String },
+    },
+    coupon: {
+      code: { type: String },
+      discount: { type: Number },
+      discountType: { type: String }, // 'PERCENTAGE' or 'FIXED'
     },
     itemsPrice: { type: Number, required: true, default: 0.0 },
     shippingPrice: { type: Number, required: true, default: 0.0 },
