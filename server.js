@@ -6,6 +6,7 @@ const connectDB = require("./config/db");
 const productRoutes = require("./routes/productRoutes");
 const orderRoutes = require("./routes/orderRoutes");
 const userRoutes = require("./routes/userRoutes");
+const cartRoutes = require("./routes/cartRoutes"); // <--- Import
 
 // 1. Load Config
 dotenv.config();
@@ -29,15 +30,10 @@ app.get("/", (req, res) => {
 });
 
 // MOUNT ROUTES
-//! Product Routes
-app.use("/api/products", productRoutes);
-//! Order Routes
-app.use("/api/orders", orderRoutes);
-
-//! User Routes
 app.use("/api/products", productRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api/cart", cartRoutes); // <--- Mount
 
 // 6. Start Server
 const PORT = process.env.PORT || 5000;
