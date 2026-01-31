@@ -54,11 +54,41 @@ const orderSchema = mongoose.Schema(
       default: "Pending",
       enum: ["Pending", "Processing", "Shipped", "Delivered", "Cancelled"],
     },
+    order_id: {
+      type: String,
+      unique: true,
+    },
   },
   {
     timestamps: true,
   },
 );
+
+// Helper to generate a 6-character uppercase alphanumeric ID
+const generateOrderId = () => {
+  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+  let result = "";
+  for (let i = 0; i < 6; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
+};
+
+// Pre-save hook to ensure the ID is generated and unique
+orderSchema.pre("save", async function () {
+  if (!this.order_id) {
+    let unique = false;
+    while (!unique) {
+      const id = generateOrderId();
+      // Check collision. Note: 'this.constructor' refers to the Model (Order)
+      const existingOrder = await this.constructor.findOne({ order_id: id });
+      if (!existingOrder) {
+        this.order_id = id;
+        unique = true;
+      }
+    }
+  }
+});
 
 const Order = mongoose.model("Order", orderSchema);
 

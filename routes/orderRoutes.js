@@ -7,9 +7,9 @@ const {
   getOrders, // Import
   updateOrderToDelivered, // Import
 } = require("../controllers/orderController");
-const { protect, admin } = require("../middleware/authMiddleware"); // Import admin
+const { protect, optionalAuth, admin } = require("../middleware/authMiddleware"); // Import admin
 
-router.route("/").post(protect, addOrderItems).get(protect, admin, getOrders); // <--- Admin only: Get All Orders
+router.route("/").post(optionalAuth, addOrderItems).get(protect, admin, getOrders); // <--- Admin only: Get All Orders
 
 router.route("/myorders").get(protect, getMyOrders);
 

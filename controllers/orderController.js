@@ -12,6 +12,7 @@ const addOrderItems = asyncHandler(async (req, res) => {
     itemsPrice,
     shippingPrice,
     totalPrice,
+    paymentResult, // <--- Added: For InstaPay Reference Number
   } = req.body;
 
   if (orderItems && orderItems.length === 0) {
@@ -27,6 +28,7 @@ const addOrderItems = asyncHandler(async (req, res) => {
       itemsPrice,
       shippingPrice,
       totalPrice,
+      paymentResult, // <--- Added
     });
 
     const createdOrder = await order.save();

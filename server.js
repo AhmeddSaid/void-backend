@@ -28,6 +28,9 @@ app.get("/", (req, res) => {
   res.send("VOID API is running...");
 });
 
+const { notFound, errorHandler } = require("./middleware/errorMiddleware");
+
+// ... (Routes above) ...
 // MOUNT ROUTES
 //! Product Routes
 app.use("/api/products", productRoutes);
@@ -35,9 +38,11 @@ app.use("/api/products", productRoutes);
 app.use("/api/orders", orderRoutes);
 
 //! User Routes
-app.use("/api/products", productRoutes);
-app.use("/api/orders", orderRoutes);
 app.use("/api/users", userRoutes);
+
+// Error Middleware
+app.use(notFound);
+app.use(errorHandler);
 
 // 6. Start Server
 const PORT = process.env.PORT || 5000;
