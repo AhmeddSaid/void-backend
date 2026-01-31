@@ -5,9 +5,9 @@ const bcrypt = require("bcryptjs");
 const connectDB = require("./config/db");
 
 // Load Models
-const User = require("./models/User");
+const User = require("./models/userModel");
 const Product = require("./models/productModel");
-const Order = require("./models/Order");
+const Order = require("./models/orderModel");
 
 dotenv.config();
 connectDB();
