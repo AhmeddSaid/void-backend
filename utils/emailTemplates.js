@@ -133,4 +133,64 @@ const generateOrderEmail = (order, frontendUrl) => {
   `;
 };
 
-module.exports = { generateOrderEmail };
+const generateAbandonedCartEmail = (cart, frontendUrl) => {
+  const logoUrl = "https://i.ibb.co/d0qWZmsh/Logo-main-white.png";
+
+  const itemsList = cart.cartItems
+      .slice(0, 3) // Show first 3 items only
+      .map(
+        (item) => `
+        <div style="display: flex; align-items: center; border-bottom: 1px solid #222; padding: 15px 0;">
+          <img src="${item.image}" alt="${item.name}" style="width: 60px; height: 75px; object-fit: cover; border-radius: 2px; margin-right: 20px;">
+          <div style="flex: 1;">
+            <h4 style="margin: 0 0 5px 0; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; color: #fff;">${item.name}</h4>
+            <p style="margin: 0; font-size: 11px; color: #888;">${item.size} / ${item.color}</p>
+          </div>
+        </div>
+      `
+      )
+      .join("");
+  
+  const remainingCount = cart.cartItems.length > 3 ? `+ ${cart.cartItems.length - 3} more items` : "";
+
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>You forgot something in the VOID</title>
+    </head>
+    <body style="margin: 0; padding: 0; background-color: #050505; color: #ffffff; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;">
+      
+      <div style="max-width: 600px; margin: 0 auto; background-color: #050505; padding: 40px 20px;">
+        
+        <div style="text-align: center; border-bottom: 1px solid #222; padding-bottom: 30px;">
+          <img src="${logoUrl}" alt="VOID" style="max-width: 150px; height: auto;">
+        </div>
+
+        <div style="text-align: center; padding: 40px 0;">
+          <h1 style="margin: 0 0 10px 0; font-size: 24px; font-weight: 300; letter-spacing: 2px; text-transform: uppercase; color: #ffffff;">Wait...</h1>
+          <p style="margin: 0; font-size: 14px; color: #888;">You left something behind. The void is calling.</p>
+        </div>
+
+        <div style="border-top: 1px solid #222; margin-bottom: 30px;">
+            ${itemsList}
+            ${remainingCount ? `<p style="text-align: center; color: #666; font-size: 12px; margin-top: 10px;">${remainingCount}</p>` : ''}
+        </div>
+
+        <div style="text-align: center;">
+           <a href="${frontendUrl}/cart" style="display: inline-block; padding: 14px 40px; background-color: #fff; color: #000; text-decoration: none; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; border-radius: 2px;">Recover Cart</a>
+        </div>
+        
+        <div style="padding: 40px 20px; text-align: center; font-size: 10px; color: #444;">
+          <p>Don't want these reminders? Ignore this email and the void will consume it.</p>
+        </div>
+
+      </div>
+    </body>
+    </html>
+  `;
+};
+
+module.exports = { generateOrderEmail, generateAbandonedCartEmail };

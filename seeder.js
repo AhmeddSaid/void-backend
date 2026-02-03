@@ -43,42 +43,63 @@ const importData = async () => {
 
     const adminUser = createdUsers[0]._id;
 
-    // 3. Create Products (Based on Brand Guide)
+    // 3. Create Products (Based on User Request)
+    const description = "Crafted from premium Heavyweight Brushed Fleece (350-500 GSM), this hoodie is designed to provide the ultimate structure and warmth. The 'Sponge' fabric technology offers a dense, puffy feel that holds its shape, featuring a super-soft brushed interior for maximum comfort. Weighing up to 1kg, it’s a true winter essential built to last.";
+    
+    // Helper to generate variants for S-2XL with 5 stock each
+    const createVariants = (color, colorCode) => {
+      const sizes = ["S", "M", "L", "XL", "2XL"];
+      return sizes.map(size => ({
+        color,
+        colorCode,
+        size,
+        stock: 5,
+        sku: `VOID-HOODIE-${color.toUpperCase().substring(0, 3)}-${size}`
+      }));
+    };
+
     const sampleProducts = [
       {
-        name: "VOID Signature Hoodie - Black",
-        slug: "void-signature-hoodie-black",
-        description:
-          "Heavyweight cotton hoodie with embroidered VOID logo on chest. Minimalist street style.",
-        price: 1200,
-        compareAtPrice: 1500,
+        name: "VOID Heavyweight Hoodie - Black",
+        slug: "void-heavyweight-hoodie-black",
+        description: description,
+        price: 1800, // Original Price
+        salePrice: 1500, // Selling Price
         category: "Hoodies",
-        coverImage:
-          "https://placehold.co/600x600/000000/FFFFFF?text=VOID+Hoodie", // Placeholder
-        images: ["https://placehold.co/600x600/000000/FFFFFF?text=Back+View"],
-        variants: [
-          { color: "Black", colorCode: "#000000", size: "S", stock: 10 },
-          { color: "Black", colorCode: "#000000", size: "M", stock: 15 },
-          { color: "Black", colorCode: "#000000", size: "L", stock: 5 },
-          { color: "Black", colorCode: "#000000", size: "XL", stock: 0 }, // Out of stock example
-        ],
-        isFeatured: true,
+        coverImage: "/assets/products/black-hoodie-front.png", // Using local placeholder path convention
+        images: ["/assets/products/black-hoodie-back.png"],
+        variants: createVariants("Black", "#000000"),
+        isFeatured: true, // Show on home
+        isNew: true,
+        isPreOrder: false,
       },
       {
-        name: "Monochrome Tee - White",
-        slug: "monochrome-tee-white",
-        description:
-          "Oversized fit t-shirt with subtle branding. Premium cotton blend.",
-        price: 650,
-        category: "T-Shirts",
-        coverImage:
-          "https://placehold.co/600x600/FFFFFF/000000?text=VOID+Tee",
-        images: [],
-        variants: [
-          { color: "White", colorCode: "#FFFFFF", size: "M", stock: 20 },
-          { color: "White", colorCode: "#FFFFFF", size: "L", stock: 20 },
-        ],
+        name: "VOID Heavyweight Hoodie - White",
+        slug: "void-heavyweight-hoodie-white",
+        description: description,
+        price: 1800,
+        salePrice: 1500,
+        category: "Hoodies",
+        coverImage: "/assets/products/white-hoodie-front.png",
+        images: ["/assets/products/white-hoodie-back.png"],
+        variants: createVariants("White", "#FFFFFF"),
         isFeatured: true,
+        isNew: true,
+        isPreOrder: false,
+      },
+      {
+        name: "VOID Heavyweight Hoodie - Grey",
+        slug: "void-heavyweight-hoodie-grey",
+        description: description,
+        price: 1800,
+        salePrice: 1500,
+        category: "Hoodies",
+        coverImage: "/assets/products/grey-hoodie-front.png",
+        images: ["/assets/products/grey-hoodie-back.png"],
+        variants: createVariants("Grey", "#808080"),
+        isFeatured: true,
+        isNew: true,
+        isPreOrder: false,
       },
     ];
 

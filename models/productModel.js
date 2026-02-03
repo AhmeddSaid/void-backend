@@ -7,8 +7,9 @@ const ProductSchema = new mongoose.Schema(
     slug: { type: String, required: true, unique: true },
     description: { type: String, required: true },
 
-    price: { type: Number, required: true },
-    compareAtPrice: { type: Number }, // Optional: shows "crossed out" original price
+    price: { type: Number, required: true }, // Original / Retail Price
+    salePrice: { type: Number }, // Discounted / Selling Price (Optional)
+    compareAtPrice: { type: Number }, // DEPRECATED: Keeping for backup temporarily
 
     category: { type: String, required: true }, // e.g., 'Hoodies', 'Pants'
 
@@ -29,6 +30,8 @@ const ProductSchema = new mongoose.Schema(
 
     // Sales Stats
     isFeatured: { type: Boolean, default: false }, // If true, shows on Homepage Hero
+    isNew: { type: Boolean, default: true },
+    isPreOrder: { type: Boolean, default: false },
     isActive: { type: Boolean, default: true },
     soldCount: { type: Number, default: 0 },
   },

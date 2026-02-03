@@ -8,5 +8,6 @@ const {
 const { protect } = require("../middleware/authMiddleware");
 
 router.route("/").get(protect, getCart).post(protect, syncCart).delete(protect, clearCart);
+router.post("/guest", require("../controllers/cartController").updateGuestCart);
 
 module.exports = router;

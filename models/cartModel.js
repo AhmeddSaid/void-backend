@@ -4,9 +4,16 @@ const cartSchema = mongoose.Schema(
   {
     user: {
       type: mongoose.Schema.Types.ObjectId,
-      required: true,
+      required: false, // Changed from true to false for Guest support
       ref: "User",
     },
+    guestId: { type: String }, // For tracking anonymous sessions
+    guestEmail: { type: String }, // Captured during checkout
+    pushSubscription: { type: Object }, // Store Web Push subscription JSON
+    
+    // Notification Flags
+    isAbandonedEmailSent: { type: Boolean, default: false },
+    isAbandonedPushSent: { type: Boolean, default: false },
     cartItems: [
       {
         productId: {

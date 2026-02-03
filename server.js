@@ -14,6 +14,10 @@ dotenv.config();
 // 2. Connect to Database
 connectDB();
 
+// 2.1. Initialize Cron Jobs (Abandoned Carts)
+const initCronJobs = require("./utils/cronJobs");
+initCronJobs();
+
 // 3. Initialize App
 const app = express();
 

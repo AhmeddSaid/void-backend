@@ -22,10 +22,45 @@ const getProducts = asyncHandler(async (req, res) => {
   // Combine filters
   const count = await Product.countDocuments({ ...keyword, ...category });
 
-  // 3. Fetch with Filters
-  const products = await Product.find({ ...keyword, ...category });
+  // 3. Sorting Logic
+  let sort = {};
+  if (req.query.sort) {
+    switch (req.query.sort) {
+      case "price-asc":
+        sort = { price: 1 };
+        break;
+      case "price-desc":
+        sort = { price: -1 };
+        break;
+      case "newest":
+        sort = { createdAt: -1 };
+        break;
+      case "oldest":
+        sort = { createdAt: 1 };
+        break;
+       case "best-selling":
+        sort = { soldCount: -1 };
+        break; 
+      default:
+        sort = { createdAt: -1 };
+    }
+  } else {
+    // Default sort
+    sort = { createdAt: -1 };
+  }
+
+  // 4. Fetch with Filters & Sort
+  const products = await Product.find({ ...keyword, ...category }).sort(sort);
 
   res.json({ products, count });
+});
+
+// @desc    Get unique categories
+// @route   GET /api/products/categories
+// @access  Public
+const getCategories = asyncHandler(async (req, res) => {
+  const categories = await Product.distinct("category");
+  res.json(categories);
 });
 
 // @desc    Fetch single product by ID or Slug
@@ -55,4 +90,5 @@ const getProductById = asyncHandler(async (req, res) => {
 module.exports = {
   getProducts,
   getProductById,
+  getCategories,
 };
