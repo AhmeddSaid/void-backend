@@ -45,8 +45,12 @@ app.use("/api/orders", orderRoutes);
 app.use("/api/users", userRoutes);
 //! Cart Routes
 app.use("/api/cart", cartRoutes);
+//! Category Routes (NEW)
+app.use("/api/categories", require("./routes/categoryRoutes"));
 //! Coupon Routes
 app.use("/api/coupons", require("./routes/couponRoutes"));
+//! Settings Routes
+app.use("/api/settings", require("./routes/settingsRoutes"));
 
 // Error Middleware
 app.use(notFound);

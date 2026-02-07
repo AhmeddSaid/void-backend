@@ -11,6 +11,8 @@ const settingsSchema = mongoose.Schema(
     },
     store: {
       acceptingOrders: { type: Boolean, default: true },
+      lowStockThreshold: { type: Number, default: 5 },
+      freeShippingThreshold: { type: Number, default: 1500 },
     },
   },
   {

@@ -17,6 +17,12 @@ const protect = asyncHandler(async (req, res, next) => {
         process.env.JWT_SECRET || "void_secret_key_123",
       );
       req.user = await User.findById(decoded.id).select("-password");
+
+      if (!req.user) {
+        res.status(401);
+        throw new Error("Not authorized, user not found");
+      }
+      
       next();
     } catch (error) {
       console.error(error);
